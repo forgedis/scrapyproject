@@ -1,0 +1,48 @@
+version: '3'
+
+services:
+  db:
+    image: postgres:9.6
+    restart: unless-stopped
+    environment:
+      POSTGRES_PASSWORD: "testpassword"
+    volumes:
+      - ./postgres-data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    container_name: postgres-db
+    networks:
+      - scrapyproject_default
+  
+  webapp:
+    build:
+      context: .
+      dockerfile: Dockerfile.webapp
+    volumes:
+      - .:/app
+    depends_on:
+      - db
+    links:
+      - db
+    ports:
+      - "8080:8080"
+    networks:
+      - scrapyproject_default
+      
+  scrapy:
+    build:
+      context: .
+      dockerfile: Dockerfile.scrapy
+    volumes:
+      - .:/app
+    depends_on:
+      - db
+    links:
+      - db
+    networks:
+      - scrapyproject_default
+  
+networks:
+  scrapyproject_default:
+    external: true
+  
